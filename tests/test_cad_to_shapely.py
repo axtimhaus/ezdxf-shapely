@@ -1,50 +1,46 @@
 import os
 from pathlib import Path
 
+import ezdxf
+
 from ezdxf_shapely import utils
-from ezdxf_shapely import DxfImporter
+from ezdxf_shapely import convert_all, polygonize, coerce_lineends
 
 TESTS_DIR = Path(__file__).parent
 
 
 def area_check(filename, area, tol=0.1):
     dxf_filepath = TESTS_DIR / filename
-    my_dxf = DxfImporter.from_file(dxf_filepath)
-    my_dxf.process()
-    my_dxf.polygonize()
+    dxf_doc = ezdxf.readfile(dxf_filepath)
+    polygons = polygonize(convert_all(dxf_doc.modelspace().entities_in_redraw_order()))
 
-    section = utils.find_holes(my_dxf.polygons)
+    section = utils.find_holes(polygons)
     return abs(section.area - area) < tol
 
 
 def test_complex_holes_section():
     dxf_filepath = TESTS_DIR / "section_holes_complex.dxf"
-    my_dxf = DxfImporter.from_file(dxf_filepath)
-    my_dxf.process(spline_delta=0.5)
-    my_dxf.polygonize()
+    dxf_doc = ezdxf.readfile(dxf_filepath)
+    polygons = polygonize(convert_all(dxf_doc.modelspace().entities_in_redraw_order()))
 
-    polygon_with_holes = utils.find_holes(my_dxf.polygons)
+    polygon_with_holes = utils.find_holes(polygons)
     polygon_with_holes.interiors
     assert len(polygon_with_holes.interiors) == 2
 
 
 def test_simplelines_from_solidworks():
     dxf_filepath = TESTS_DIR / "simplelines_from_solidworks.dxf"
-    my_dxf = DxfImporter.from_file(dxf_filepath)
-    my_dxf.process()
-    my_dxf.polygonize()
+    dxf_doc = ezdxf.readfile(dxf_filepath)
+    polygons = polygonize(convert_all(dxf_doc.modelspace().entities_in_redraw_order()))
 
-    polygons = my_dxf.polygons
     assert len(polygons) == 1
 
 
 def test_dxf_r14_lines_and_arcs():
     dxf_filepath = TESTS_DIR / "200ub22_R12dxf_linesandarcs.dxf"
-    my_dxf = DxfImporter.from_file(dxf_filepath)
-    my_dxf.process()
-    my_dxf.polygonize()
+    dxf_doc = ezdxf.readfile(dxf_filepath)
+    polygons = polygonize(convert_all(dxf_doc.modelspace().entities_in_redraw_order()))
 
-    polygons = my_dxf.polygons
     assert len(polygons) == 1
 
 
