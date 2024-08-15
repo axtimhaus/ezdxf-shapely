@@ -1,14 +1,15 @@
 import os
 from pathlib import Path
 
-from ezdxf_shapely import dxf, utils
+from ezdxf_shapely import utils
+from ezdxf_shapely import DxfImporter
 
 TESTS_DIR = Path(__file__).parent
 
 
 def area_check(filename, area, tol=0.1):
     dxf_filepath = str(TESTS_DIR / filename)
-    my_dxf = dxf.DxfImporter(dxf_filepath)
+    my_dxf = DxfImporter(dxf_filepath)
     my_dxf.process()
     my_dxf.polygonize()
 
@@ -18,7 +19,7 @@ def area_check(filename, area, tol=0.1):
 
 def test_complex_holes_section():
     dxf_filepath = str(TESTS_DIR / "section_holes_complex.dxf")
-    my_dxf = dxf.DxfImporter(dxf_filepath)
+    my_dxf = DxfImporter(dxf_filepath)
     my_dxf.process(spline_delta=0.5)
     my_dxf.polygonize()
 
@@ -29,7 +30,7 @@ def test_complex_holes_section():
 
 def test_simplelines_from_solidworks():
     dxf_filepath = str(TESTS_DIR / "simplelines_from_solidworks.dxf")
-    my_dxf = dxf.DxfImporter(dxf_filepath)
+    my_dxf = DxfImporter(dxf_filepath)
     my_dxf.process()
     my_dxf.polygonize()
 
@@ -39,7 +40,7 @@ def test_simplelines_from_solidworks():
 
 def test_dxf_r14_lines_and_arcs():
     dxf_filepath = str(TESTS_DIR / "200ub22_R12dxf_linesandarcs.dxf")
-    my_dxf = dxf.DxfImporter(dxf_filepath)
+    my_dxf = DxfImporter(dxf_filepath)
     my_dxf.process()
     my_dxf.polygonize()
 

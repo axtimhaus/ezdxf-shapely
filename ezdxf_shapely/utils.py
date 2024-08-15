@@ -1,9 +1,6 @@
-from cmath import pi
-from typing import List, Tuple, Union
 import random
 import math
 import logging
-from warnings import catch_warnings
 
 import numpy as np
 import shapely.geometry as sg
@@ -23,7 +20,7 @@ def point_in_polygon(polygon: sg.Polygon, limit=1000):
     return None
 
 
-def find_holes(polygons: List[sg.Polygon]) -> sg.Polygon:
+def find_holes(polygons: list[sg.Polygon]) -> sg.Polygon:
     """
     Construct single polygon from imported CAD goemetry.
     Assumes there is only one parent shape (the one with the largest gross area.)
@@ -77,13 +74,13 @@ def facets(polygon: sg.Polygon, inc_holes=True):
     return f
 
 
-def distance(p1: List[float], p2: List[float]) -> float:
+def distance(p1: list[float], p2: list[float]) -> float:
     return math.sqrt((p2[0] - p1[0]) ** 2 + (p2[1] - p1[1]) ** 2)
 
 
 def arc_points(
-    start_angle: float, end_angle: float, radius: float, center: List[float], degrees_per_segment: float
-) -> list:
+    start_angle: float, end_angle: float, radius: float, center: list[float], degrees_per_segment: float
+) -> np.ndarray:
     """
     Coordinates of an arcs (for approximation as a polyline)
 
@@ -107,7 +104,7 @@ def arc_points(
     return np.column_stack([x, y])
 
 
-def arc_points_from_bulge(p1: List[float], p2: List[float], b: float, degrees_per_segment: float):
+def arc_points_from_bulge(p1: list[float], p2: list[float], b: float, degrees_per_segment: float):
     """
     http://darrenirvine.blogspot.com/2015/08/polylines-radius-bulge-turnaround.html
 

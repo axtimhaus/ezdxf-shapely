@@ -1,5 +1,3 @@
-from . import utils
-from . import cadimporter
-from . import dxf
+from .dxf_importer import DxfImporter
 
 VERSION = "0.1a"
