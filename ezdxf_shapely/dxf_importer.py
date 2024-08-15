@@ -1,5 +1,7 @@
 import logging
 import math
+from os import PathLike
+from typing import Self
 
 import numpy as np
 from geomdl import NURBS
@@ -21,12 +23,30 @@ class DxfImporter:
     Imports CAD geometry into self.geometry
     """
 
-    def __init__(self, filename: str):
-        self.filename = filename
-        self.units: str = None  # unitless
+    def __init__(self, dxf_entities: list[ezdxf.entities.DXFEntity], units:  str | None):
+        self.entities = dxf_entities
+        self.units: str = units
         self.geometry: list[sg.base.BaseGeometry] = []
         self.polygons: list[sg.Polygon] = []
         self._already_zipped = False
+
+    @classmethod
+    def from_file(cls, dxf_file: PathLike, query: str = "CIRCLE LINE ARC POLYLINE ELLIPSE SPLINE SHAPE LWPOLYLINE") -> Self:
+        sdoc = ezdxf.readfile(dxf_file)
+
+        units = None
+
+        if "$INSUNITS" in sdoc.header:
+            try:
+                u = int(sdoc.header["$INSUNITS"])
+                if u in DXF_UNIT_CODES:
+                    units = DXF_UNIT_CODES[u]
+            except ValueError:
+                logging.error("Casting to int error")
+
+        ents = list(sdoc.modelspace().query(query))
+
+        return cls(ents, units)
 
     def zip(self, zip_length: float = 0.000001):
         """
@@ -230,20 +250,9 @@ class DxfImporter:
             str: report on geometry processed
         """
 
-        sdoc = ezdxf.readfile(self.filename)
-
-        if "$INSUNITS" in sdoc.header:
-            try:
-                u = int(sdoc.header["$INSUNITS"])
-                if u in DXF_UNIT_CODES:
-                    self.units = DXF_UNIT_CODES[u]
-            except ValueError:
-                logging.error("Casting to int error")
-
-        ents = sdoc.modelspace().query("CIRCLE LINE ARC POLYLINE ELLIPSE SPLINE SHAPE LWPOLYLINE")
-
         n_splines = n_polylines = n_lines = n_arcs = n_not_implemented = n_lwpolylines = 0
-        for e in ents:
+
+        for e in self.entities:
             if isinstance(e, entities.Spline) and e.dxf.flags >= ezdxf.lldxf.const.PLANAR_SPLINE:
                 self._process_2d_spline(e, delta=spline_delta)
                 n_splines += 1
