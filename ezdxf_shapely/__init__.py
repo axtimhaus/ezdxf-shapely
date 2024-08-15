@@ -22,4 +22,4 @@ __all__ = [
     "polygonize",
 ]
 
-VERSION = "0.1a"
+VERSION = "0.1"

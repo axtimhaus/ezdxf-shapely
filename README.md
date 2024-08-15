@@ -1,16 +1,25 @@
-# CAD to shapely
+# EZDXF to Shapely Converter
 
-convert a CAD file to [shapely](https://pypi.org/project/Shapely/) geometry for downstream processing.
-Currently supports, to varying degrees:
+Convert geometric entities loaded vom DXF files using [`ezdxf`] to [`shapely`](https://pypi.org/project/Shapely/) geometry objects.
 
-- DXF using [exdxf](https://pypi.org/project/ezdxf/)
-- (IGES to follow)
-- (SVG to follow)
+First use `ezdxf` to load the DXF entities from file and filter them using `query` or similar.
 
-## Utils
+```python
+import ezdxf
 
-Also some utils in utils.py
+dxf_doc = ezdxf.readfile("your_file.dxf")
+entities = dxf_doc.modelspace().query("*[layer==0]")
+```
 
-## Example
+Then use `ezdxf-shapely` to convert the entities and refine the results.
 
-To run example in `example.py` you need to install matplotlib `pip install matplotlib`.
+```python
+import ezdxf_shapely
+
+geoms = ezdxf_shapely.convert_all(entities)
+polygons = ezdxf_shapely.polygonize(geoms) # optionally merge lines to polygons
+```
+
+## License
+
+Licensed under the terms of the [MIT License](LICENSE)
