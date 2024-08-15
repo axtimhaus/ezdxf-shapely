@@ -1,14 +1,23 @@
 import math
-from typing import Iterable
+from collections.abc import Iterable
 
-import numpy as np
-from geomdl import NURBS
 import ezdxf
-import ezdxf.entities as entities
-
+import numpy as np
 import shapely.geometry as sg
+from ezdxf import entities
+from geomdl import NURBS
 
-from . import utils
+from ezdxf_shapely import utils
+
+__all__ = [
+    "convert_2d_polyline",
+    "convert_2d_spline",
+    "convert_all",
+    "convert_all_generator",
+    "convert_arc",
+    "convert_line",
+    "convert_lwpolyline",
+]
 
 
 def convert_2d_polyline(polyline: entities.Polyline, degrees_per_segment: float = 1) -> sg.LineString:
@@ -33,12 +42,7 @@ def convert_2d_polyline(polyline: entities.Polyline, degrees_per_segment: float 
 
             xy.extend(pts)
 
-    if polyline.is_closed:
-        pl = sg.LinearRing(xy)
-    else:
-        pl = sg.LineString(xy)
-
-    return pl
+    return sg.LinearRing(xy) if polyline.is_closed else sg.LineString(xy)
 
 
 def convert_lwpolyline(polyline: entities.LWPolyline, degrees_per_segment: float = 1) -> sg.LineString:
@@ -73,11 +77,7 @@ def convert_lwpolyline(polyline: entities.LWPolyline, degrees_per_segment: float
 
             xy.extend(pts)
 
-    if polyline.closed:
-        pl = sg.LinearRing(xy)
-    else:
-        pl = sg.LineString(xy)
-    return pl
+    return sg.LinearRing(xy) if polyline.is_closed else sg.LineString(xy)
 
 
 def convert_2d_spline(spline: entities.Spline, delta=0.1) -> sg.LineString:
@@ -94,23 +94,20 @@ def convert_2d_spline(spline: entities.Spline, delta=0.1) -> sg.LineString:
     # curve.weights = spline.weights + [1] * np.array(spline.control_point_count()- len(spline.weights))
     curve.knotvector = spline.knots
 
-    curve.delta = delta  # TODO sampling - this could get out of hand depending on model dims and scale
+    curve.delta = delta  # TODO: sampling - this could get out of hand depending on model dims and scale
 
-    # TODO conditional delta: min length, n and check for straight lines
+    # TODO: conditional delta: min length, n and check for straight lines
 
     xyz = np.array(curve.evalpts)
 
     # discard z data
-    xy = list([x[:-1] for x in xyz])
+    xy = [x[:-1] for x in xyz]
 
-    pl = sg.LineString(xy)
-
-    return pl
+    return sg.LineString(xy)
 
 
 def convert_line(line: entities.Line) -> sg.LineString:
-    l = sg.LineString([(line.dxf.start.x, line.dxf.start.y), (line.dxf.end.x, line.dxf.end.y)])
-    return l
+    return sg.LineString([(line.dxf.start.x, line.dxf.start.y), (line.dxf.end.x, line.dxf.end.y)])
 
 
 def convert_arc(arc: entities.Arc, degrees_per_segment: float = 1) -> sg.LineString:
@@ -127,13 +124,11 @@ def convert_arc(arc: entities.Arc, degrees_per_segment: float = 1) -> sg.LineStr
         start_angle, end_angle, arc.dxf.radius, [arc.dxf.center.x, arc.dxf.center.y], degrees_per_segment
     )
 
-    arc = sg.LineString(pts)
-
-    return arc
+    return sg.LineString(pts)
 
 
 def convert_all_generator(
-        dxf_entities: Iterable[entities.DXFGraphic], spline_delta=0.1, degrees_per_segment: float = 1
+    dxf_entities: Iterable[entities.DXFGraphic], spline_delta=0.1, degrees_per_segment: float = 1
 ) -> Iterable[sg.LineString]:
     for e in dxf_entities:
         match e:
@@ -148,7 +143,8 @@ def convert_all_generator(
             case entities.Arc() as a:
                 yield convert_arc(a, degrees_per_segment=degrees_per_segment)
             case _:
-                raise TypeError(f"Conversion of entity type {type(e)} not supported.")
+                msg = f"Conversion of entity type {type(e)} not supported."
+                raise TypeError(msg)
 
 
 def convert_all(

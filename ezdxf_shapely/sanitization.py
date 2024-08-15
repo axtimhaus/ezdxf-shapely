@@ -1,12 +1,17 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 import shapely.geometry as sg
 from shapely import ops
 
 DXF_UNIT_CODES = {0: None, 1: "in", 2: "ft", 3: "mi", 4: "mm", 5: "cm", 6: "m", 7: "km", 10: "yd", 14: "dm"}
 
+__all__ = [
+    "coerce_line_ends",
+    "polygonize",
+]
 
-def coerce_lineends(geoms: Iterable[sg.LineString], zip_length: float = 1e-6) -> list[sg.LineString]:
+
+def coerce_line_ends(geoms: Iterable[sg.LineString], zip_length: float = 1e-6) -> list[sg.LineString]:
     """
     Zip tries to reconcile not-quite-matching LineString start and end points.
     Point < zip_length apart will be equated.
@@ -45,12 +50,12 @@ def polygonize(
         polygons = list(result.geoms)
 
     if force_zip or (not polygons and retry_with_zip):
-        geoms = coerce_lineends(geoms, zip_length)
+        geoms = coerce_line_ends(geoms, zip_length)
         result, dangles, cuts, invalids = ops.polygonize_full(geoms)
         polygons = list(result.geoms)
 
     if polygons and simplify:
-        for i, p in enumerate(polygons):
+        for i in range(len(polygons)):
             polygons[i] = polygons[i].simplify(0)
 
     return polygons

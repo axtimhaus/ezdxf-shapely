@@ -1,10 +1,8 @@
-import os
 from pathlib import Path
 
 import ezdxf
 
-from ezdxf_shapely import utils
-from ezdxf_shapely import convert_all, polygonize, coerce_lineends
+from ezdxf_shapely import convert_all, polygonize, utils
 
 TESTS_DIR = Path(__file__).parent
 
@@ -24,7 +22,6 @@ def test_complex_holes_section():
     polygons = polygonize(convert_all(dxf_doc.modelspace().entities_in_redraw_order()))
 
     polygon_with_holes = utils.find_holes(polygons)
-    polygon_with_holes.interiors
     assert len(polygon_with_holes.interiors) == 2
 
 

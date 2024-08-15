@@ -1,6 +1,5 @@
-import random
 import math
-import logging
+import random
 
 import numpy as np
 import shapely.geometry as sg
@@ -50,8 +49,7 @@ def find_holes(polygons: list[sg.Polygon]) -> sg.Polygon:
             if valid:
                 keepers.append(p)
 
-    new = sg.Polygon(parent, holes=keepers)
-    return new
+    return sg.Polygon(parent, holes=keepers)
 
 
 def facets(polygon: sg.Polygon, inc_holes=True):
@@ -146,8 +144,6 @@ def arc_points_from_bulge(p1: list[float], p2: list[float], b: float, degrees_pe
         C = ((A + B) / 2) - s * a * N
     else:
         C = ((A + B) / 2) + s * a * N
-
-    logging.debug(f"radius {r:.1f} : distance {u:.1f} : centre {C[0]:.1f},{C[1]:.1f}")
 
     start_angle = math.atan2(p1[1] - C[1], p1[0] - C[0])
     if b < 0:

@@ -1,11 +1,25 @@
-from .conversion import (
+from ezdxf_shapely.conversion import (
     convert_2d_polyline,
     convert_2d_spline,
     convert_all,
+    convert_all_generator,
     convert_arc,
     convert_line,
     convert_lwpolyline,
 )
-from .sanitization import coerce_lineends, polygonize
+from ezdxf_shapely.sanitization import coerce_line_ends, polygonize
+
+__all__ = [
+    "VERSION",
+    "convert_2d_polyline",
+    "convert_2d_spline",
+    "convert_all",
+    "convert_all_generator",
+    "convert_arc",
+    "convert_line",
+    "convert_lwpolyline",
+    "coerce_line_ends",
+    "polygonize",
+]
 
 VERSION = "0.1a"
