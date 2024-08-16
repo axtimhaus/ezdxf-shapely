@@ -1,6 +1,6 @@
 # EZDXF to Shapely Converter
 
-Convert geometric entities loaded vom DXF files using [`ezdxf`] to [`shapely`](https://pypi.org/project/Shapely/) geometry objects.
+Convert geometric entities loaded vom DXF files using [`ezdxf`](https://ezdxf.readthedocs.io/) to [`shapely`](https://pypi.org/project/Shapely/) geometry objects.
 
 First use `ezdxf` to load the DXF entities from file and filter them using `query` or similar.
 
