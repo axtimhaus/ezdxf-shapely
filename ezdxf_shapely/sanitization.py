@@ -4,8 +4,6 @@ import shapely.geometry as sg
 from shapely import ops
 from shapely import affinity
 
-DXF_UNIT_CODES = {0: None, 1: "in", 2: "ft", 3: "mi", 4: "mm", 5: "cm", 6: "m", 7: "km", 10: "yd", 14: "dm"}
-
 __all__ = ["coerce_line_ends", "polygonize", "centralize", "line_merge"]
 
 
