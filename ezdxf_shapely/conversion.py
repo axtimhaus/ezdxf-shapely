@@ -21,6 +21,14 @@ __all__ = [
 
 
 def convert_2d_polyline(polyline: entities.Polyline, degrees_per_segment: float = 1) -> sg.LineString:
+    """
+    Convert a DXF polyline to a shapely line string.
+
+    :param polyline: the source polyline
+    :param degrees_per_segment: angular discretization distance for arcs
+
+    :returns: a line string or a linear ring (if closed)
+    """
     xy = []
 
     for i, v1 in enumerate(polyline.vertices):
@@ -47,8 +55,12 @@ def convert_2d_polyline(polyline: entities.Polyline, degrees_per_segment: float 
 
 def convert_lwpolyline(polyline: entities.LWPolyline, degrees_per_segment: float = 1) -> sg.LineString:
     """
-    lwpolyline is a lightweight polyline (cf POLYLINE)
-    This function equiv to _convert_2d_polyline
+    Convert a DXF lightweight polyline to a shapely line string.
+
+    :param polyline: the source polyline
+    :param degrees_per_segment: angular discretization distance for arcs
+
+    :returns: a line string or a linear ring (if closed)
     """
 
     xy = []
@@ -82,8 +94,12 @@ def convert_lwpolyline(polyline: entities.LWPolyline, degrees_per_segment: float
 
 def convert_2d_spline(spline: entities.Spline, delta=0.1) -> sg.LineString:
     """
-    Uses geomdl module to create intermediate b-spline from dxf spline.
-    This is then sampled as a linestring since shapely does not support splines.
+    Convert a DXF spline to a shapely line string.
+
+    :param spline: the source spline
+    :param delta: discretization distance
+
+    :returns: a line string
     """
 
     curve = NURBS.Curve()
@@ -107,13 +123,24 @@ def convert_2d_spline(spline: entities.Spline, delta=0.1) -> sg.LineString:
 
 
 def convert_line(line: entities.Line) -> sg.LineString:
+    """
+    Convert a DXF line to a shapely line string.
+
+    :param line: the source line
+
+    :returns: a line string
+    """
     return sg.LineString([(line.dxf.start.x, line.dxf.start.y), (line.dxf.end.x, line.dxf.end.y)])
 
 
 def convert_arc(arc: entities.Arc, degrees_per_segment: float = 1) -> sg.LineString:
     """
-    shapely does not do arcs, so we make it into an n-lined polyline.
-    modified from here: https://stackoverflow.com/questions/30762329/how-to-create-polygons-with-arcs-in-shapely-or-a-better-library
+    Convert a DXF arc to a shapely line string.
+
+    :param arc: the source arc
+    :param degrees_per_segment: angular discretization distance
+
+    :returns: a line string
     """
     start_angle = math.radians(arc.dxf.start_angle)
     end_angle = math.radians(arc.dxf.end_angle)
@@ -130,6 +157,16 @@ def convert_arc(arc: entities.Arc, degrees_per_segment: float = 1) -> sg.LineStr
 def convert_all_generator(
     dxf_entities: Iterable[entities.DXFGraphic], spline_delta=0.1, degrees_per_segment: float = 1
 ) -> Iterable[sg.LineString]:
+    """
+    Convert a collection of DXF entities to shapely line strings.
+    Implemented as generator function.
+
+    :param dxf_entities: the source entities
+    :param spline_delta: discretization distance for splines
+    :param degrees_per_segment: angular discretization distance
+
+    :returns: a generator for line strings
+    """
     for e in dxf_entities:
         match e:
             case entities.Spline() as s if e.dxf.flags >= ezdxf.lldxf.const.PLANAR_SPLINE:
@@ -150,4 +187,14 @@ def convert_all_generator(
 def convert_all(
     dxf_entities: Iterable[entities.DXFGraphic], spline_delta=0.1, degrees_per_segment: float = 1
 ) -> list[sg.LineString]:
+    """
+    Convert a collection of DXF entities to shapely line strings.
+    Uses ``convert_all_generator`` internally.
+
+    :param dxf_entities: the source entities
+    :param spline_delta: discretization distance for splines
+    :param degrees_per_segment: angular discretization distance
+
+    :returns: a list of line strings
+    """
     return list(convert_all_generator(dxf_entities, spline_delta, degrees_per_segment))

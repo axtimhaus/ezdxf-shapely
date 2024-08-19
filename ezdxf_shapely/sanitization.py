@@ -11,10 +11,14 @@ __all__ = [
 ]
 
 
-def coerce_line_ends(geoms: Iterable[sg.LineString], zip_length: float = 1e-6) -> list[sg.LineString]:
+def coerce_line_ends(geoms: Iterable[sg.LineString], distance: float = 1e-8) -> list[sg.LineString]:
     """
-    Zip tries to reconcile not-quite-matching LineString start and end points.
-    Point < zip_length apart will be equated.
+    Coerce nearby line ends to the exact same point.
+
+    :param geoms: iterable of line strings to operate on
+    :param distance: maximum distance to move line ends during coercion
+
+    :returns: the line strings with coerced ends (fresh instances)
     """
 
     geoms = list(geoms)
@@ -28,29 +32,38 @@ def coerce_line_ends(geoms: Iterable[sg.LineString], zip_length: float = 1e-6) -
             ls2 = geoms[j]
             fp_2 = sg.Point(ls2.coords[0])
             lp_2 = sg.Point(ls2.coords[-1])
-            if fp_1.distance(fp_2) < zip_length and fp_1.distance(fp_2) != 0:
+            if fp_1.distance(fp_2) < distance and fp_1.distance(fp_2) != 0:
                 geoms[j] = sg.LineString([ls1.coords[0]] + ls2.coords[1:])
-            if fp_1.distance(lp_2) < zip_length and fp_1.distance(lp_2) != 0:
+            if fp_1.distance(lp_2) < distance and fp_1.distance(lp_2) != 0:
                 geoms[j] = sg.LineString(ls2.coords[:-1] + [ls1.coords[0]])
-            if lp_1.distance(fp_2) < zip_length and lp_1.distance(fp_2) != 0:
+            if lp_1.distance(fp_2) < distance and lp_1.distance(fp_2) != 0:
                 geoms[j] = sg.LineString([ls1.coords[-1]] + ls2.coords[1:])
-            if lp_1.distance(lp_2) < zip_length and lp_1.distance(lp_2) != 0:
+            if lp_1.distance(lp_2) < distance and lp_1.distance(lp_2) != 0:
                 geoms[j] = sg.LineString(ls2.coords[:-1] + [ls1.coords[-1]])
 
     return geoms
 
 
 def polygonize(
-    geoms: Iterable[sg.LineString], simplify=True, force_zip=False, zip_length=0.000001, retry_with_zip=True
+    geoms: Iterable[sg.LineString], coerce_ends=True, coercion_distance=1e-8, simplify=True
 ) -> list[sg.Polygon]:
+    """
+    Create polygons from the given line strings.
+    Optionally, coerce the line ends before polygonization and simplify the result after.
+
+    :param geoms: iterable of line strings to use for polygonization
+    :param coerce_ends: whether to coerce the line ends before polygonization
+    :param coercion_distance: maximum distance to move line ends during coercion
+    :param simplify: whether to simplify the resulting polygons
+
+    :returns: a list of created polygons
+    """
     polygons = []
 
-    if not force_zip:
-        polygons = list(ops.polygonize(geoms))
+    if coerce_ends:
+        geoms = coerce_line_ends(geoms, coercion_distance)
 
-    if force_zip or (not polygons and retry_with_zip):
-        geoms = coerce_line_ends(geoms, zip_length)
-        polygons = list(ops.polygonize(geoms))
+    polygons = list(ops.polygonize(geoms))
 
     if polygons and simplify:
         polygons = [p.simplify(0) for p in polygons]
