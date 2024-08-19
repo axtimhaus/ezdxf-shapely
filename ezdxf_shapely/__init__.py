@@ -7,7 +7,7 @@ from ezdxf_shapely.conversion import (
     convert_line,
     convert_lwpolyline,
 )
-from ezdxf_shapely.sanitization import coerce_line_ends, polygonize
+from ezdxf_shapely.sanitization import coerce_line_ends, polygonize, centralize, line_merge
 
 __all__ = [
     "VERSION",
@@ -20,6 +20,8 @@ __all__ = [
     "convert_lwpolyline",
     "coerce_line_ends",
     "polygonize",
+    "centralize",
+    "line_merge",
 ]
 
 VERSION = "0.1"
