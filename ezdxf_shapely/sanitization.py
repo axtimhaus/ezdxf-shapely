@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 
+import shapely
 import shapely.geometry as sg
 from shapely import ops
 
@@ -46,16 +47,13 @@ def polygonize(
     polygons = []
 
     if not force_zip:
-        result, dangles, cuts, invalids = ops.polygonize_full(geoms)
-        polygons = list(result.geoms)
+        polygons = list(ops.polygonize(geoms))
 
     if force_zip or (not polygons and retry_with_zip):
         geoms = coerce_line_ends(geoms, zip_length)
-        result, dangles, cuts, invalids = ops.polygonize_full(geoms)
-        polygons = list(result.geoms)
+        polygons = list(ops.polygonize(geoms))
 
     if polygons and simplify:
-        for i in range(len(polygons)):
-            polygons[i] = polygons[i].simplify(0)
+        polygons = [p.simplify(0) for p in polygons]
 
     return polygons
