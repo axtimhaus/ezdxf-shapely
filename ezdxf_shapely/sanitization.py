@@ -1,6 +1,5 @@
 from collections.abc import Iterable
 
-import shapely
 import shapely.geometry as sg
 from shapely import ops
 

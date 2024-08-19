@@ -43,5 +43,11 @@ dependencies = [
     "pytest ~= 7.1"
 ]
 
+[tool.hatch.envs.hatch-static-analysis]
+config-path = "ruff_defaults.toml"
+
 [tool.hatch.version]
 path = "ezdxf_shapely/__init__.py"
+
+[tool.ruff]
+extend = "ruff_defaults.toml"
