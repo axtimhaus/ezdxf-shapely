@@ -153,6 +153,20 @@ def convert_arc(arc: entities.Arc, degrees_per_segment: float = 1) -> sg.LineStr
 
     return sg.LineString(pts)
 
+def convert_circle(circle: entities.Circle, degrees_per_segment: float = 1) -> sg.LineString:
+    """
+    Convert a DXF circuel to a shapely line string.
+
+    :param circle: the source circle
+    :param degrees_per_segment: angular discretization distance
+
+    :returns: a line string
+    """
+    pts = utils.arc_points(
+        0, 2 * np.pi, circle.dxf.radius, [circle.dxf.center.x, circle.dxf.center.y], degrees_per_segment
+    )
+    pts[-1, :] = pts[0, :]  # Force the endpoint to match the startpoint. Numerical issues can make them be a little mismatched
+    return sg.LineString(pts)
 
 def convert_all_generator(
     dxf_entities: Iterable[entities.DXFGraphic], spline_delta=0.1, degrees_per_segment: float = 1
@@ -179,6 +193,8 @@ def convert_all_generator(
                 yield convert_line(l)
             case entities.Arc() as a:
                 yield convert_arc(a, degrees_per_segment=degrees_per_segment)
+            case entities.Circle() as c:
+                yield convert_circle(c, degrees_per_segment=degrees_per_segment)
             case _:
                 msg = f"Conversion of entity type {type(e)} not supported."
                 raise TypeError(msg)
