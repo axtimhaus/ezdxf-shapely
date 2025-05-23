@@ -94,6 +94,7 @@ def arc_points(
     """
 
     n = abs(int((end_angle - start_angle) / math.radians(degrees_per_segment)))  # number of segments
+    n = max(n, 2)  # We want to always include the end points, even if abs(end_angle - start_angle) < degrees_per_segment
     theta = np.linspace(start_angle, end_angle, n)
 
     x = center[0] + radius * np.cos(theta)
